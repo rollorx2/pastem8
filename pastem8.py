@@ -22,6 +22,7 @@ if not os.path.exists(upass_folder):
 # Set up a list of regular expressions to match
 regexes = [
     (re.compile(r'[\w\.-]+@[\w\.-]+\.[\w\.-]+:[\w\d\!\@\#\$\%\^\&\*\(\)\_\+]{8,}'), 'emailpass'),
+    (re.compile(r'(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6011[0-9]{12}|3(?:0[0-5]|[68][0-9])[0-9]{11}|3[47][0-9]{13})'), 'credit_card'),
     (re.compile(r'\b[\w\d\!\@\#\$\%\^\&\*\(\)\_\+]{5,20}:[\w\d\!\@\#\$\%\^\&\*\(\)\_\+]{8,}\b'), 'upass')
 ]
 
@@ -36,16 +37,13 @@ while True:
     # Iterate over the pastes
     for paste in pastes:
         # Check if the paste has already been downloaded
-        if os.path.exists(os.path.join(data_folder, paste['key'] + '.txt')):
-            continue
-
-        # Download the paste data
-        paste_response = requests.get(paste['scrape_url'])
-        paste_data = paste_response.text
-
-        # Save the paste data to a file, with the title as the first line
         filename = os.path.join(data_folder, paste['key'] + '.txt')
         if not os.path.exists(filename):
+            # Download the paste data
+            paste_response = requests.get(paste['scrape_url'])
+            paste_data = paste_response.text
+
+            # Save the paste data to a file, with the title as the first line
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(paste['title'] + '\n')
                 f.write(paste_data)
@@ -53,30 +51,21 @@ while True:
             print(f'Saved paste {paste["key"]}')
         else:
             print(f'File {filename} already exists, skipping...')
-
         # Check if the paste matches any of the regular expressions
-        # user_input = input('Do you want to perform the regex check? (y/n) ')
-        # if user_input.lower() == 'y':
-            # # Check if the paste matches any of the regular expressions
-            # matched = False
-            # for regex, folder in regexes:
-                # if regex.search(paste_data):
-                    # # Move the paste to the appropriate folder
-                    # os.rename(os.path.join(data_folder, paste['key'] + '.txt'), os.path.join(folder, paste['key'] + '.txt'))
-                    # print(f'Matched paste {paste["key"]} to {folder}')
-                    # matched = True
-                    # break
-            
-            # if not matched:
-                # print(f'No match for paste {paste["key"]}')
+        matched = False
+        for regex, folder in regexes:
+            if regex.search(paste_data):
+                # Move the paste to the appropriate folder
+                destination = os.path.join(folder, paste['key'] + '.txt')
+                if os.path.exists(destination):
+                    # If the destination file already exists, skip the current iteration
+                    continue
 
-    # Count the number of files in each folder
-    emailpass_count = len(os.listdir(emailpass_folder))
-    upass_count = len(os.listdir(upass_folder))
-    print(f'Found {emailpass_count} emailpass files and {upass_count} upass files.')
+                os.rename(filename, destination)
+                print(f'Matched paste {paste["key"]} to {folder}')
+                matched = True
+                break
 
-    # Wait one minute before querying the API again
-    print('Waiting 60 seconds...')
-    for i in range(120):
-        time.sleep(1)
-        print(120 - i - 1, end='\r')
+    # Pause for a 240 seconds 
+    time.sleep(240)
+

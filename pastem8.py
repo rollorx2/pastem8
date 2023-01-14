@@ -21,7 +21,7 @@ if not os.path.exists(upass_folder):
 
 # Set up a list of regular expressions to match
 regexes = [
-    (re.compile(r'[\w\.-]+@[\w\.-]+\.[\w\.-]+:[\w\d\!\@\#\$\%\^\&\*\(\)\_\+]{8,}'), 'emailpass'),
+    (re.compile(r'^[a-z0-9]{6,20}:[a-zA-Z0-9!@#$%^&*()]{8,14}$'), 'emailpass'),
     (re.compile(r'(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6011[0-9]{12}|3(?:0[0-5]|[68][0-9])[0-9]{11}|3[47][0-9]{13})'), 'credit_card'),
     (re.compile(r'\b[\w\d\!\@\#\$\%\^\&\*\(\)\_\+]{5,20}:[\w\d\!\@\#\$\%\^\&\*\(\)\_\+]{8,}\b'), 'upass')
 ]
